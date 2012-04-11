@@ -10,7 +10,6 @@ begin
     gem.email = "kevinjhaight@gmail.com"
     gem.homepage = "http://github.com/alayho/gatoroid"
     gem.authors = ["Kevin Haight"]
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
