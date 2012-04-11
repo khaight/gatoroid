@@ -31,27 +31,22 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
- ### Gatoroid
+		<h3>Gatoroid</h3>
+		<p>Gatoroid is a way to store analytics using the powerful features of MongoDB for scalability</p>
+		<p>Leveraging mongoid, Gatoroid is a way to increment, decrement, add to, and reset counters in MongoDB.  The data is stored using an hourly grain in a utc allowing for easy analytics for on just about anything.</p>
 
-		Gatoroid is a way to store analytics using the powerful features of MongoDB for scalability
-
-		Leveraging mongoid, Gatoroid is a way to increment, decrement, add to, and reset counters in MongoDB.  The data is stored using an hourly grain in a utc allowing for easy analytics for on just about anything.
-
-		## Using Gatoroid to store analytics information
-		Simply create a class that includes Mongoid::Gator
-		
-		```
-		class SiteStats
+		<h4>Using Gatoroid to store analytics information<h4>
+		<p>Simply create a class that includes Mongoid::Gator</p>
+		<pre><code>class SiteStats
 		  include Mongoid::Gator
 		  field :siteid
-		          gator_field :visits
-		        end
-		```
+		  gator_field :visits
+		end</code></pre>
 
-		Use the class to increment the counter for visits to the site.
-
-		        @site_stats = SiteStats.new()
-		        @site_stats.visits.inc(:siteid=>100)
+		<p>Use the class to increment the counter for visits to the site.</p>
+		<pre><code>@site_stats = SiteStats.new()
+		@site_stats.visits.inc(:siteid=>100)
+		<pre><code>
 
 		You can also add to the count using the add method.  The following adds 10 visits to tomorrow.
 
