@@ -6,7 +6,7 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "gatoroid"
     gem.summary = %Q{Gatoroid is an easy scalable analytics plugin using MongoDB and Mongoid}
-    gem.description = %Q{Gatoroid uses a way to store analytics using the poweful features of MongoDB for scalability}
+    gem.description = %Q{Gatoroid is a way to store analytics using the poweful features of MongoDB for scalability}
     gem.email = "kevinjhaight@gmail.com"
     gem.homepage = "http://github.com/alayho/gatoroid"
     gem.authors = ["Kevin Haight"]
