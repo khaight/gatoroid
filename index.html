@@ -38,10 +38,10 @@
 		<h4>Using Gatoroid to store analytics information</h4>
 		<p>Simply create a class that includes Mongoid::Gator</p>
 		<pre><code>class SiteStats
-		  include Mongoid::Gator
-		  field :siteid
-		  gator_field :visits
-		end</code></pre>
+			include Mongoid::Gator
+			field :siteid
+			gator_field :visits
+			end</code></pre>
 
 		<p>Use the class to increment the counter for visits to the site.</p>
 		<pre><code>@site_stats = SiteStats.new()
