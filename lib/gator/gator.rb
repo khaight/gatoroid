@@ -12,7 +12,7 @@ module Mongoid #:nodoc:
         delegate :gator_keys, :to => "self.class"
       end
     end
-             
+      
     module ClassMethods
       def field(name=nil)
         gator_keys << name

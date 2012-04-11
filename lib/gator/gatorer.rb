@@ -4,13 +4,16 @@ module Mongoid  #:nodoc:
       class Gatorer
 
         include Readers
-
+        
+        # Initialize object
         def initialize(object, field)
            @object, @for = object, field
            create_accessors()
         end
 
         private
+        
+        # Get total for
         def total_for(date,grain,opts={})
          unless date.nil?
            begin
@@ -21,6 +24,7 @@ module Mongoid  #:nodoc:
          end
         end
         
+        # Get collections for
         def collection_for(date,grain, opts={})
           unless date.nil?
             return  @object.collection.group(:keyf => create_fkey(grain), 
@@ -30,6 +34,7 @@ module Mongoid  #:nodoc:
           end
         end
         
+        # Convert date levels
         def convert_date_by_level(date,level)
           if date.is_a?(Range)
             sdate = date.first
@@ -48,6 +53,7 @@ module Mongoid  #:nodoc:
           end
         end
         
+        # Create fkey
         def create_fkey(grain)
           case grain
           when HOUR
@@ -77,6 +83,11 @@ module Mongoid  #:nodoc:
                 keys, date = gen_params(Hash[*args])
                 add_to_counter(how_many,keys,date)
             end
+            
+            define_method :reset  do |  *args |       
+                keys, date = gen_params(Hash[*args])
+                reset_counter(keys,date)
+            end
           end
         end
         
@@ -92,17 +103,28 @@ module Mongoid  #:nodoc:
             )
         end
         
-        # Increment
+        # Reset Counter
+        def reset_counter(keys=[], date = Time.now)
+          # Upsert value
+          @object.collection.update(create_key_hash(keys,date.utc),
+            {"$set" => {
+              "#{@for}" => 0,
+            }},
+              :upsert => true
+            )
+        end
+        
+        # Increment Counter
         def inc_counter(keys,date = Time.now)
           add_to_counter(1,keys,date)
         end
         
-        # Decrement
+        # Decrement Counter
         def dec_counter(keys, date = Time.now)
            add_to_counter(-1,keys,date)
         end
         
-        # Create Hash Key
+        # Generate parameters
         def gen_params(params)
           date = Time.now # Set default date to now
           key_hash = Hash.new { |hash, key| hash[key] = [] }
@@ -117,6 +139,7 @@ module Mongoid  #:nodoc:
           return key_hash, date
         end
         
+        # Create Hash Key
         def create_key_hash(keys,date = Time.now)
           keys = Hash[keys]
           key_hash = Hash.new { |hash, key| hash[key] = [] }
@@ -133,6 +156,7 @@ module Mongoid  #:nodoc:
           return key_hash
         end
         
+        # Create Group Key Hash
         def create_group_key_hash
           keys = []
           @object.gator_keys.each do | gk |
@@ -142,6 +166,7 @@ module Mongoid  #:nodoc:
           return keys
         end
         
+        # Create Query Hash
         def create_query_hash(date = Time.now, grain, opts)
           key_hash = Hash.new { |hash, key| hash[key] = [] }
           # Set Keys
@@ -153,12 +178,12 @@ module Mongoid  #:nodoc:
               key_hash[gk] = opts[gk]
             end
           end
-          # Set Dates
-          sdate,edate = convert_date_by_level(date,grain)
+          sdate,edate = convert_date_by_level(date,grain) # Set Dates
           key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate)}
           return key_hash
         end
         
+        # Normalize Dates
         def normalize_date(date)
           case date
           when String
