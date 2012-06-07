@@ -45,9 +45,9 @@ module Mongoid  #:nodoc:
           end
           case level
           when HOUR
-            return sdate.change(:sec=>0), edate.change(:sec=>0) + 1.hour
+            return sdate.change(:sec=>0), edate.change(:sec=>0)
           when DAY
-            return sdate.change(:hour=>0).change(:sec=>0), edate.change(:hour=>0).change(:sec=>0) + 1.day
+            return sdate.change(:hour=>0).change(:sec=>0), edate.change(:hour=>24).change(:sec=>0)
           when MONTH
             return sdate.change(:day=>1).change(:hour=>0).change(:sec=>0), edate.change(:day=>1).change(:hour=>0).change(:sec=>0) + 1.month
           end
@@ -179,7 +179,7 @@ module Mongoid  #:nodoc:
             end
           end
           sdate,edate = convert_date_by_level(date,grain) # Set Dates
-          key_hash[:date] = {"$gte" => normalize_date(sdate), "$lte" => normalize_date(edate)}
+          key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate)}
           return key_hash
         end
         

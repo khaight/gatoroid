@@ -59,6 +59,8 @@ module Mongoid  #:nodoc:
                 end
           	  end
         	  end
+        	  # Sort by date
+        	  data = data.sort_by { |hsh| hsh["date"] }
           	return data
         end
       
