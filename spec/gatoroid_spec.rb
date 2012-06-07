@@ -100,15 +100,15 @@ describe Mongoid::Gator do
       end
       
       it "should have 1 record using range method for today and yesterday at day grain" do
-        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(1).record
+        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(2).record
       end
       
       it "should have 1 record using range method for today and yesterday at hour grain" do
-        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(1).record
+        @obj.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(25).record
       end
       
       it "should have 1 record using range method for today and yesterday at month grain" do
-        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(1).record
+        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(1).record
       end
       
       it "should reset value to zero" do
@@ -178,15 +178,15 @@ describe Mongoid::Gator do
       end
 
       it "should have 1 record using range method for today and yesterday at day grain" do
-        Test.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>200).should have(1).record
+        Test.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>200).should have(2).record
       end
 
       it "should have 1 record using range method for today and yesterday at hour grain" do
-        Test.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(1).record
+        Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(25).record
       end
 
       it "should have 1 record using range method for today and yesterday at month grain" do
-        Test.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(1).record
+        Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(25).record
       end
       
       it "should reset value to zero" do
