@@ -25,9 +25,9 @@ module Mongoid  #:nodoc:
         end
         
         # Get collections for
-        def collection_for(date,grain, opts={})
+        def collection_for(date,grain,off_set,opts={})
           unless date.nil?
-            return  @object.collection.group(:keyf => create_fkey(grain), 
+            return  @object.collection.group(:keyf => create_fkey(grain,off_set), 
                     :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
                     :cond=>create_query_hash(date,grain,opts),
                     :initial => {@for => 0})
@@ -45,23 +45,36 @@ module Mongoid  #:nodoc:
           end
           case level
           when HOUR
-            return sdate.change(:sec=>0), edate.change(:sec=>0)
+            return sdate.change(:sec=>0), edate.change(:sec=>0) + 1.hour
           when DAY
-            return sdate.change(:hour=>0).change(:sec=>0), edate.change(:hour=>24).change(:sec=>0)
+            return sdate.change(:hour=>0).change(:sec=>0), edate.change(:hour=>0).change(:sec=>0) + 1.day
           when MONTH
             return sdate.change(:day=>1).change(:hour=>0).change(:sec=>0), edate.change(:day=>1).change(:hour=>0).change(:sec=>0) + 1.month
           end
         end
         
         # Create fkey
-        def create_fkey(grain)
+        def create_fkey(grain,off_set)
           case grain
           when HOUR
             fkey = Javascript.aggregate_hour
           when MONTH
-            fkey = Javascript.aggregate_month
+            fkey = "function(doc) {
+                off_set = #{off_set} * 1000;
+                dd = new Date((doc.date + #{off_set})* 1000);
+                utc_date = parseInt((Date.parse((dd.getUTCMonth() + 1) + '/' + '01' + '/' + dd.getUTCFullYear()) / 1000)/86400)*86400;
+                out = (utc_date - #{off_set});
+                return {date:  out.toFixed(0)};
+                }"
+
           else # DEFAULT TO DAY
-            fkey = Javascript.aggregate_day
+	          fkey = "function(doc) {
+            	  off_set = #{off_set} * 1000;
+             	  dd = new Date((doc.date + #{off_set})* 1000);
+		            utc_date = parseInt((Date.parse((dd.getUTCMonth() + 1) + '/' + dd.getUTCDate() + '/' + dd.getUTCFullYear()) / 1000)/86400)*86400;
+		            out = (utc_date - #{off_set});
+            	return {date:  out.toFixed(0)};
+     	    	}"
           end
           return fkey
         end

@@ -1,17 +1,17 @@
 aggregate_hour:
-    "function(doc) { 
-        d = new Date(doc.date* 1000); 
-        return {date:  (Date.parse((d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear() + ' ' + d.getHours() + ':00:00') / 1000).toFixed(0)}; 
+    "function(doc) {
+        d = new Date(doc.date* 1000);
+        return {date:  (Date.parse((d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear() + ' ' + d.getHours() + ':00:00') / 1000).toFixed(0)};
      }"
-     
+
 aggregate_day:
-    "function(doc) { 
-        d = new Date(doc.date* 1000); 
-        return {date:   (Date.parse((d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear()) / 1000).toFixed(0)}; 
+    "function(doc) {
+        d = new Date(doc.date* 1000);
+        return {date:   (Date.parse((d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear() + ' 00::00') / 1000).toFixed(0)};
      }"
-    
+
 aggregate_month:
-    "function(doc) { 
-    d = new Date(doc.date* 1000); 
-    return {date:   (Date.parse((d.getMonth() + 1) + '/1/' + d.getFullYear()) / 1000).toFixed(0)}; 
-    }"
+    "function(doc) {
+    d = new Date(doc.date* 1000);
+    return {date:   (Date.parse((d.getMonth() + 1) + '/1/' + d.getFullYear()) / 1000).toFixed(0)};
+    }
