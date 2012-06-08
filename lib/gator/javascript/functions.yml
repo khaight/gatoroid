@@ -14,4 +14,4 @@ aggregate_month:
     "function(doc) {
     d = new Date(doc.date* 1000);
     return {date:   (Date.parse((d.getMonth() + 1) + '/1/' + d.getFullYear()) / 1000).toFixed(0)};
-    }
+    }"
