@@ -44,7 +44,7 @@ module Mongoid  #:nodoc:
               case grain
                 when HOUR
                   start_date = start_date.change(:sec=>0)
-                  end_date = end_date.change(:sec=>0)
+                  end_date = end_date.change(:sec=>0) - 1.hour
                 when DAY
                   start_date = start_date.change(:hour=>0).change(:sec=>0)
                   end_date = end_date.change(:hour=>0).change(:sec=>0)
