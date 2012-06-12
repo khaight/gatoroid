@@ -45,7 +45,7 @@ module Mongoid  #:nodoc:
           end
           case level
           when HOUR
-            return sdate.change(:sec=>0), edate.change(:sec=>0) + 1.hour
+            return sdate.change(:sec=>0), edate.change(:sec=>0)
           when DAY
             return sdate.change(:hour=>0).change(:sec=>0), edate.change(:hour=>0).change(:sec=>0) + 1.day
           when MONTH
