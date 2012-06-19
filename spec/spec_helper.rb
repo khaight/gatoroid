@@ -11,6 +11,7 @@ require 'bson'
 require 'rspec'
 require 'rspec/autorun'
 
+Time.zone = "UTC"
 Mongoid.configure do |config|
   name = "gatoroid_test"
   host = "localhost"

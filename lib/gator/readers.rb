@@ -22,6 +22,10 @@ module Mongoid  #:nodoc:
         def on(date,opts={})
           total_for(date, DEFAULT_GRAIN,opts).to_i
         end
+        
+        def last(total_days = 7,opts={})
+          total_for((Time.zone.now - total_days.days)..Time.zone.now, DEFAULT_GRAIN, opts).to_i
+        end
 
         # Range - retuns a collection for a specified range on specified level
         def range(date, grain=DEFAULT_GRAIN, opts={})
