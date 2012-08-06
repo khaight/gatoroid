@@ -120,6 +120,12 @@ describe Mongoid::Gator do
         @obj.visits.today(:siteid=>100).should == 0
       end
       
+      it "should have 1 record using range method for today and yesterday at day grain", :test => true do
+        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        @obj.visits.group_by(Time.now..Time.now + 1.day).should have(2).record
+      end
   end
   
   
@@ -201,6 +207,14 @@ describe Mongoid::Gator do
         Test.visits.reset(:date => Time.now, :siteid=>200).should_not raise_error Mongoid::Errors::ModelNotSaved
         Test.visits.today(:siteid=>200).should == 0
       end
+      
+      it "should have 1 record using range method for today and yesterday at day grain", :test => true do
+        lambda { Test.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        Test.visits.group_by(Time.now..Time.now + 1.day).should have(2).record
+      end
+      
    end
 
 end
