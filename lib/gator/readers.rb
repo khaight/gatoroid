@@ -76,6 +76,20 @@ module Mongoid  #:nodoc:
             data = data.sort_by { |hsh| hsh["date"] }
             return data
         end
+        
+        
+        # Group_by - retuns a collection for a specific key
+        def group_by(date, opts={})
+            # Get Offset
+            if date.is_a?(Range)
+                off_set = date.first.utc_offset
+            else
+                off_set = date.utc_offset
+            end
+            data = collection_for_group(date,off_set,opts)
+            return data
+        end
+        
       end
   end
 end

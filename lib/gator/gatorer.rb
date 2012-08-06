@@ -34,6 +34,16 @@ module Mongoid  #:nodoc:
           end
         end
         
+        # Get collections for group
+        def collection_for_group(date,off_set,opts={})
+          unless date.nil?
+            return  @object.collection.group(:key => create_group_key_hash, 
+                    :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
+                    :cond=>create_query_hash(date,"HOUR",opts),
+                    :initial => {@for => 0})
+          end
+        end
+        
         # Convert date levels
         def convert_date_by_level(date,level)
           if date.is_a?(Range)
@@ -175,7 +185,6 @@ module Mongoid  #:nodoc:
           @object.gator_keys.each do | gk |
             keys << gk
           end
-          keys << :date
           return keys
         end
         
@@ -183,14 +192,17 @@ module Mongoid  #:nodoc:
         def create_query_hash(date = Time.now, grain, opts)
           key_hash = Hash.new { |hash, key| hash[key] = [] }
           # Set Keys
-          @object.gator_keys.each do | gk |
-            raise Errors::ModelNotSaved, "Missing key value #{gk}" if opts[gk].nil?
-            if  opts[gk].kind_of?(Array)
-              key_hash[gk] = {"$in" =>  opts[gk]}
-            else
-              key_hash[gk] = opts[gk]
+          if !opts.empty?
+            @object.gator_keys.each do | gk |
+              raise Errors::ModelNotSaved, "Missing key value #{gk}" if opts[gk].nil?
+              if  opts[gk].kind_of?(Array)
+                key_hash[gk] = {"$in" =>  opts[gk]}
+              else
+                key_hash[gk] = opts[gk]
+              end
             end
           end
+          
           sdate,edate = convert_date_by_level(date,grain) # Set Dates
           key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate)}
           return key_hash
