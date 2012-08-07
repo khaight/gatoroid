@@ -35,11 +35,11 @@ module Mongoid  #:nodoc:
         end
         
         # Get collections for group
-        def collection_for_group(date,off_set,opts={})
+        def collection_for_group(date,grain,off_set,opts={})
           unless date.nil?
             return  @object.collection.group(:key => create_group_key_hash, 
                     :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
-                    :cond=>create_query_hash(date,"HOUR",opts),
+                    :cond=>create_query_hash(date,grain,opts),
                     :initial => {@for => 0})
           end
         end
