@@ -124,7 +124,7 @@ describe Mongoid::Gator do
         lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        @obj.visits.group_by(Time.now..Time.now + 1.day).should have(2).record
+        @obj.visits.group_by(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY).should have(2).record
       end
   end
   
@@ -176,7 +176,7 @@ describe Mongoid::Gator do
       end
 
       it "should give 1 for today stats" do
-        Test.visits.today(:siteid=>200).should == 1
+        Test.visits.today(:siteid=>200).should == 3
       end
 
       it "should give 0 for yesterday stats" do
@@ -184,11 +184,11 @@ describe Mongoid::Gator do
       end
 
       it "should give 1 for using on for today stats" do
-        Test.visits.on(Time.now,:siteid=>200).should == 1
+        Test.visits.on(Time.now,:siteid=>200).should == 3
       end
       
       it "should give 1 for last stats" do
-        Test.visits.last(7,:siteid=>200).should ==1
+        Test.visits.last(7,:siteid=>200).should ==3
       end
 
       it "should have 1 record using range method for today and yesterday at day grain" do
@@ -212,7 +212,7 @@ describe Mongoid::Gator do
         lambda { Test.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        Test.visits.group_by(Time.now..Time.now + 1.day).should have(2).record
+        Test.visits.group_by(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY).should have(2).record
       end
       
    end
