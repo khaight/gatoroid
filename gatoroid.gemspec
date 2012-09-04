@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "gatoroid"
-  s.version = "0.2.11"
+  s.version = "0.2.12"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kevin Haight"]
-  s.date = "2012-08-07"
+  s.date = "2012-09-04"
   s.description = "Gatoroid is a way to store analytics using the poweful features of MongoDB for scalability"
   s.email = "kevinjhaight@gmail.com"
   s.extra_rdoc_files = [

@@ -31,7 +31,7 @@ module Mongoid  #:nodoc:
         def range(date, grain=DEFAULT_GRAIN, opts={})
             # Get Offset
             if date.is_a?(Range)
-                off_set = date.first.utc_offset
+                off_set = date.last.utc_offset
             else
                 off_set = date.utc_offset
             end
