@@ -29,14 +29,6 @@ module Mongoid  #:nodoc:
 
         # Range - retuns a collection for a specified range on specified level
         def range(date, grain=DEFAULT_GRAIN, opts={})
-            # Get Offset
-            if date.is_a?(Range)
-                off_set = date.last.utc_offset
-            else
-                off_set = date.utc_offset
-            end
-
-
             data = collection_for(date,grain,off_set,opts)
 
             # Add Zero values for dates missing
