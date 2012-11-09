@@ -8,4 +8,5 @@ group :development do
   gem 'rspec', '>= 2.2.0'
   gem 'mocha'
   gem 'bson_ext'
+  gem 'database_cleaner', '0.8.0'
 end
