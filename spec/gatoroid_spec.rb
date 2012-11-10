@@ -10,6 +10,7 @@ end
 describe Mongoid::Gator do
   before(:all) do
     @gatoroid_version = File.read(File.expand_path("../VERSION", File.dirname(__FILE__)))
+    Time.zone = 'UTC'
   end
 
   it "should expose the same version as the VERSION file" do
@@ -113,8 +114,15 @@ describe Mongoid::Gator do
         @obj.visits.last(7,:siteid=>100).should == 7
       end
       
-      it "should have 1 record using range method for today and yesterday at day grain" do
-        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(2).record
+      it "should have 1 record using range method for today and yesterday at day grain", :kevtest => true do
+        lambda { @obj.visits.add(100,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        1.upto(365){ | x |  
+          1.upto(2){ |y| 
+            lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now + x.days + y.hours) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+          }
+        }
+        Time.zone = "Pacific Time (US & Canada)"
+        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(366).record
       end
       
       it "should have 1 record using range method for today and yesterday at hour grain" do
