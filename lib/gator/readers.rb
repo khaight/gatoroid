@@ -29,7 +29,7 @@ module Mongoid  #:nodoc:
 
         # Range - retuns a collection for a specified range on specified level
         def range(date, grain=DEFAULT_GRAIN, opts={})
-            data = collection_for(date,HOUR,opts)
+            data = collection_for(date,grain,opts)
 
             # Add Zero values for dates missing
             # May want to look into a way to get mongo to do this
