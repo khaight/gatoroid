@@ -65,27 +65,7 @@ module Mongoid  #:nodoc:
         
         # Create fkey
         def create_fkey(grain,off_set)
-          case grain
-          when HOUR
-            fkey = Javascript.aggregate_hour
-          when MONTH
-            fkey = "function(doc) {
-                off_set = #{off_set} * 1000;
-                dd = new Date((doc.date + #{off_set})* 1000);
-                utc_date = parseInt((Date.parse((dd.getUTCMonth() + 1) + '/' + '01' + '/' + dd.getUTCFullYear()) / 1000)/86400)*86400;
-                out = (utc_date - #{off_set});
-                return {date:  out.toFixed(0)};
-                }"
-
-          else # DEFAULT TO DAY
-	          fkey = "function(doc) {
-            	  off_set = #{off_set} * 1000;
-             	  dd = new Date((doc.date + #{off_set})* 1000);
-		            utc_date = parseInt((Date.parse((dd.getUTCMonth() + 1) + '/' + dd.getUTCDate() + '/' + dd.getUTCFullYear()) / 1000)/86400)*86400;
-		            out = (utc_date - #{off_set});
-            	return {date:  out.toFixed(0)};
-     	    	}"
-          end
+          fkey = Javascript.aggregate_hour
           return fkey
         end
         
