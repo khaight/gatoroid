@@ -204,7 +204,7 @@ module Mongoid  #:nodoc:
           end
           
           sdate,edate = convert_date_by_level(date,grain) # Set Dates
-          key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate)}
+          key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate + 1.day)}
           return key_hash
         end
         

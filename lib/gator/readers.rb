@@ -41,6 +41,7 @@ module Mongoid  #:nodoc:
                 when HOUR
                   start_date = start_date.change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:sec=>0).change(:min => 0) - 1.hour
+                  data = data.group_by {|d| (Time.zone.at(d["date"].to_i).change(:sec=>0).change(:min => 0)).to_i }
                 when DAY
                   start_date = start_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
@@ -81,11 +82,11 @@ module Mongoid  #:nodoc:
         def group_by(date,grain,opts={})
             # Get Offset
             if date.is_a?(Range)
-                off_set = date.first.utc_offset
+                off_set = date.last.utc_offset
             else
                 off_set = date.utc_offset
             end
-            data = collection_for_group(date,grain,off_set,opts)
+            data = collection_for_group(date,HOUR,0,opts)
             return data
         end
         
