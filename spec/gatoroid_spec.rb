@@ -10,6 +10,7 @@ end
 describe Mongoid::Gator do
   before(:all) do
     @gatoroid_version = File.read(File.expand_path("../VERSION", File.dirname(__FILE__)))
+    Time.zone = 'UTC'
   end
 
   it "should expose the same version as the VERSION file" do
@@ -88,23 +89,40 @@ describe Mongoid::Gator do
 
 
       it "should give 1 for today stats" do
+        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         @obj.visits.today(:siteid=>100).should == 1
       end
       
-      it "should give 0 for yesterday stats" do
-        @obj.visits.yesterday(:siteid=>100).should == 0
+      it "should give 1 for yesterday stats" do
+        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 1.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        @obj.visits.yesterday(:siteid=>100).should == 1
       end
       
       it "should give 1 for using on for today stats" do
+        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         @obj.visits.on(Time.now,:siteid=>100).should == 1
       end
       
       it "should give 1 for last stats" do
-        @obj.visits.last(7,:siteid=>100).should == 1
+        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 6.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 5.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 4.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 3.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 2.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 1.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        @obj.visits.last(7,:siteid=>100).should == 7
       end
       
-      it "should have 1 record using range method for today and yesterday at day grain" do
-        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(2).record
+      it "should have 1 record using range method for today and yesterday at day grain", :kevtest => true do
+        lambda { @obj.visits.add(100,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        1.upto(365){ | x |  
+          1.upto(2){ |y| 
+            lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now + x.days + y.hours) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+          }
+        }
+        Time.zone = "Pacific Time (US & Canada)"
+        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(366).record
       end
       
       it "should have 1 record using range method for today and yesterday at hour grain" do
@@ -176,19 +194,28 @@ describe Mongoid::Gator do
       end
 
       it "should give 1 for today stats" do
-        Test.visits.today(:siteid=>200).should == 3
+        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        Test.visits.today(:siteid=>200).should == 1
       end
 
       it "should give 0 for yesterday stats" do
         Test.visits.yesterday(:siteid=>200).should == 0
       end
 
-      it "should give 1 for using on for today stats" do
-        Test.visits.on(Time.now,:siteid=>200).should == 3
+      it "should give 1 for using ON for today stats" do
+        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        Test.visits.on(Time.now,:siteid=>200).should == 1
       end
       
       it "should give 1 for last stats" do
-        Test.visits.last(7,:siteid=>200).should ==3
+        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 6.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 5.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 4.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 3.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 2.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 1.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        Test.visits.last(7,:siteid=>200).should ==7
       end
 
       it "should have 1 record using range method for today and yesterday at day grain" do

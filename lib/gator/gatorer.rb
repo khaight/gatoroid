@@ -25,9 +25,9 @@ module Mongoid  #:nodoc:
         end
         
         # Get collections for
-        def collection_for(date,grain,off_set,opts={})
+        def collection_for(date,grain,opts={})
           unless date.nil?
-            return  @object.collection.group(:keyf => create_fkey(grain,off_set), 
+            return  @object.collection.group(:keyf => create_fkey(grain,0), 
                     :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
                     :cond=>create_query_hash(date,grain,opts),
                     :initial => {@for => 0})
@@ -204,7 +204,7 @@ module Mongoid  #:nodoc:
           end
           
           sdate,edate = convert_date_by_level(date,grain) # Set Dates
-          key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate)}
+          key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate + 1.day)}
           return key_hash
         end
         

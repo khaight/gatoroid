@@ -29,15 +29,7 @@ module Mongoid  #:nodoc:
 
         # Range - retuns a collection for a specified range on specified level
         def range(date, grain=DEFAULT_GRAIN, opts={})
-            # Get Offset
-            if date.is_a?(Range)
-                off_set = date.last.utc_offset
-            else
-                off_set = date.utc_offset
-            end
-
-
-            data = collection_for(date,grain,off_set,opts)
+            data = collection_for(date,HOUR,opts)
 
             # Add Zero values for dates missing
             # May want to look into a way to get mongo to do this
@@ -49,17 +41,26 @@ module Mongoid  #:nodoc:
                 when HOUR
                   start_date = start_date.change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:sec=>0).change(:min => 0) - 1.hour
+                  data = data.group_by {|d| (Time.zone.at(d["date"].to_i).change(:sec=>0).change(:min => 0)).to_i }
                 when DAY
                   start_date = start_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
+                  data = data.group_by {|d| (Time.zone.at(d["date"].to_i).change(:hour=>0).change(:sec=>0).change(:min => 0)).to_i }
                 when MONTH
                   start_date = start_date.change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)
+                  data = data.group_by {|d| (Time.zone.at(d["date"].to_i).change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)).to_i }
               end
 
+              # Initialize result set array
+              result_set = []
+              
+              # Build Result Set by Time Zone
               while start_date <= end_date
-                if data.select{|item| item['date'].to_i == start_date.to_i}.first.nil?
-                    data << {"date" => "#{start_date.to_i}", @for => 0}
+                if data[start_date.to_i].nil?
+                   result_set << {"date" => "#{start_date.to_i}", @for => 0}
+                else
+                  result_set << {"date" => "#{start_date.to_i}", @for => data[start_date.to_i].map{|di| di[@for.to_s].to_i}.inject(0, :+)}
                 end
                 
                 case grain
@@ -72,9 +73,8 @@ module Mongoid  #:nodoc:
                 end
               end
             end
-            # Sort by date
-            data = data.sort_by { |hsh| hsh["date"] }
-            return data
+
+            return result_set
         end
         
         
@@ -82,11 +82,11 @@ module Mongoid  #:nodoc:
         def group_by(date,grain,opts={})
             # Get Offset
             if date.is_a?(Range)
-                off_set = date.first.utc_offset
+                off_set = date.last.utc_offset
             else
                 off_set = date.utc_offset
             end
-            data = collection_for_group(date,grain,off_set,opts)
+            data = collection_for_group(date,HOUR,0,opts)
             return data
         end
         

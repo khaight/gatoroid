@@ -21,7 +21,21 @@ end
 
 RSpec.configure do |config|
   config.mock_with :mocha
-  config.before :suite do
-    Mongoid.master.collections.reject { |c| c.name =~ /^system\./ }.each(&:drop)
+
+  # keep our mongo DB all shiney and new between tests
+  require 'database_cleaner'
+  
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner.orm = "mongoid"
   end
+  
+  config.before(:each) do
+    DatabaseCleaner.clean
+  end
+  
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
+  
 end
