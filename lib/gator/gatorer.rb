@@ -13,7 +13,7 @@ module Mongoid  #:nodoc:
 
         private
         
-        # Get total for
+        # Return the total for a property of an object
         def total_for(date,grain,opts={})
          unless date.nil?
            begin
@@ -24,59 +24,63 @@ module Mongoid  #:nodoc:
          end
         end
         
-        # Get collections for
+        # Return the aggregate in a collection
         def collection_for(date,grain,opts={})
           unless date.nil?
-            #puts "dates"
-            #puts create_query_hash(date,grain,opts).inspect
-            #puts create_fkey(grain,0).inspect
-            #puts @for
-            
-            case grain
-            when HOUR
-              pipeline = [
-                      {"$match" => create_query_hash(date,grain,opts)},
-                      {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}, "day" => {"$dayOfMonth" => "$date"}, "hour" => {"$hour" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
-                      {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "day" => "$_id.day", "hour" => "$_id.hour", "#{@for}" => 1}},
-                  ]
-            when DAY
-              pipeline = [
-                      {"$match" => create_query_hash(date,grain,opts)},
-                      {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}, "day" => {"$dayOfMonth" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
-                      {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "day" => "$_id.day", "#{@for}" => 1}},
-                  ]
-            when MONTH
-              pipeline = [
-                      {"$match" => create_query_hash(date,grain,opts)},
-                      {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
-                      {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "#{@for}" => 1}},
-                  ]
-            end
-            return @object.collection.aggregate(pipeline)
-            #return  @object.collection.aggregate(:keyf => create_fkey(grain,0), 
-            #        :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
-            #        :cond=>create_query_hash(date,grain,opts),
-            #        :initial => {@for => 0})
+            return @object.collection.aggregate(create_pipeline(date,grain,opts))
           end
         end
         
-        # Get collections for group
+        # Return collections for group
         def collection_for_group(date,grain,off_set,opts={})
           unless date.nil?
-            
             pipeline = [
                     {"$match" => create_query_hash(date,grain,opts)},
-                    {"$group" => {"_id" => "$#{@for}", "#{@for}" => {"$sum" => "$#{@for}"}}},
-                    {"$project" => {"_id" => 0,   "#{@for}" => 1}},
+                    {"$group" => create_group_key_hash},
+                    {"$project" => create_group_project_hash},
                 ]
             return @object.collection.aggregate(pipeline)
-            
-           # return  @object.collection.group(:key => create_group_key_hash, 
-           #         :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
-           #         :cond=>create_query_hash(date,grain,opts),
-           #         :initial => {@for => 0})
           end
         end
+        
+        # Create pipline
+        def create_pipeline(date,grain,opts={})
+          # group & project
+          case grain
+            when HOUR
+              pipeline = [
+                    {"$match" => create_query_hash(date,grain,opts)},
+                    {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}, "day" => {"$dayOfMonth" => "$date"}, "hour" => {"$hour" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
+                    {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "day" => "$_id.day", "hour" => "$_id.hour", "#{@for}" => 1}},
+                ]
+              when DAY
+                pipeline = [
+                    {"$match" => create_query_hash(date,grain,opts)},
+                    {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}, "day" => {"$dayOfMonth" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
+                    {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "day" => "$_id.day", "#{@for}" => 1}},
+                ]
+              when MONTH
+                pipeline = [
+                    {"$match" => create_query_hash(date,grain,opts)},
+                    {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
+                    {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "#{@for}" => 1}},
+                ]
+            end
+          return pipeline         
+        end
+        
+        
+        # Create group project Hash
+        def create_group_project_hash
+          key_hash = Hash.new { |hash, key| hash[key] = [] }
+          key_hash["_id"] = 0
+          @object.gator_keys.each do | gk |
+            key_hash[gk] = "$_id.#{gk}"
+          end
+          key_hash[@for] = 1
+          return key_hash
+        end
+        
         
         # Convert date levels
         def convert_date_by_level(date,level)
@@ -201,11 +205,14 @@ module Mongoid  #:nodoc:
         
         # Create Group Key Hash
         def create_group_key_hash
-          keys = []
+          key_hash = Hash.new { |hash, key| hash[key] = [] }
+          
+          key_hash["_id"] = {}
           @object.gator_keys.each do | gk |
-            keys << gk
+            key_hash["_id"].merge!({"#{gk}" => {"$toLower" => "$#{gk}"}})
           end
-          return keys
+          key_hash[@for] = {"$sum" => "$#{@for}"}
+          return key_hash
         end
         
         # Create Query Hash
@@ -214,7 +221,6 @@ module Mongoid  #:nodoc:
           # Set Keys
           if !opts.empty?
             @object.gator_keys.each do | gk |
-              #raise Errors::ModelNotSaved, "Missing key value #{gk}" if opts[gk].nil?
               unless opts[gk].nil?
               if  opts[gk].kind_of?(Array)
                 key_hash[gk] = {"$in" =>  opts[gk]}
@@ -242,8 +248,7 @@ module Mongoid  #:nodoc:
           else
             date = date.change(:sec => 0).change(:min => 0)
           end
-          return date.utc
-          
+          return date.utc          
         end
           
       end  

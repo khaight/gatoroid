@@ -12,8 +12,6 @@ require 'rspec'
 require 'rspec/autorun'
 
 Time.zone = "UTC"
-#Mongoid.logger = Logger.new($stdout)
-#Moped.logger = Logger.new($stdout)
 Mongoid.configure do |config|
   config.connect_to("gatoroid_test")
 end
@@ -35,8 +33,8 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
   
-  #config.after(:each) do
-  #  DatabaseCleaner.clean
-  #end
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
   
 end

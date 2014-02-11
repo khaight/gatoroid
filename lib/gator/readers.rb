@@ -30,9 +30,7 @@ module Mongoid  #:nodoc:
         # Range - retuns a collection for a specified range on specified level
         def range(date, grain=DEFAULT_GRAIN, opts={})
             data = collection_for(date,grain,opts)
-            #puts "RAW DATA"
-            #puts data.inspect
-            #puts ""
+
             # Add Zero values for dates missing
             # May want to look into a way to get mongo to do this
             if date.is_a?(Range)
@@ -44,15 +42,12 @@ module Mongoid  #:nodoc:
                 when HOUR
                   start_date = start_date.change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:sec=>0).change(:min => 0) - 1.hour
-                  #data = data.group_by {|d| (Time.zone.at(d["date"].to_i).change(:sec=>0).change(:min => 0)).to_i }
                 when DAY
                   start_date = start_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
-                  #data = data.group_by {|d| (Time.zone.at(d["date"].to_i).change(:hour=>0).change(:sec=>0).change(:min => 0)).to_i }
                 when MONTH
                   start_date = start_date.change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)
-                  #data = data.group_by {|d| (Time.zone.at(d["date"].to_i).change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)).to_i }
               end
 
               # Initialize result set array

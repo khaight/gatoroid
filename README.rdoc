@@ -1,9 +1,17 @@
-= Gatoroid
+= Gatoroid - V 1.0.beta1
 
 Gatoroid is a way to store analytics using the powerful features of MongoDB for scalability
 
 Leveraging mongoid, Gatoroid is a way to increment, decrement, add to, and reset counters in MongoDB.  The data is stored using an hourly grain in a utc allowing for easy analytics for on just about anything.
 
+== IMPORTANT RELEASE NOTES ==
+ This version of the Gatoroid GEM is a beta release to support Rails 4 in conjunction with the mongoid V4.beta1. I am trying my best to keep up with the latest versions.
+	This gem has been tested using:
+	Mongoid::VERSION:4.0.0.beta1
+	Moped::VERSION:2.0.0.beta6
+	MongoDB Version 2.2
+
+				
 == Using Gatoroid to store analytics information
 Simply create a class that includes Mongoid::Gator
 

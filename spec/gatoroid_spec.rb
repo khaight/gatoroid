@@ -29,10 +29,10 @@ describe Mongoid::Gator do
       json_as = {}
       json_to = ""
 
-      lambda {
+      expect {
         json_as = mock.as_json(:except => :_id)
         json_to = mock.to_json(:except => :_id)
-      }.should_not raise_error
+      }.not_to raise_error
       json_as.should == { "siteid" => 1000 }
       json_to.should == "{\"siteid\":1000}"
   end
@@ -76,7 +76,7 @@ describe Mongoid::Gator do
       end
       
       it "should increment stats when key is present" do
-        lambda { @obj.visits.inc(:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.inc(:siteid=>100) }.not_to raise_error
       end
       
       it "should not decrement stats when key is present" do
@@ -84,7 +84,7 @@ describe Mongoid::Gator do
       end
       
       it "should decrement stats when key is present" do
-        lambda { @obj.visits.dec(:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.dec(:siteid=>100) }.not_to raise_error
       end
       
       it "should not add stats when key is present" do
@@ -92,43 +92,41 @@ describe Mongoid::Gator do
       end
       
       it "should add stats when key is present" do
-        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.add(1,:siteid=>100) }.not_to raise_error
       end
 
 
       it "should give 1 for today stats", :today_test => true do
-        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.add(1,:siteid=>100) }.not_to raise_error
         @obj.visits.today(:siteid=>100).should == 1
       end
       
       it "should give 1 for yesterday stats" do
-        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 1.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 1.day) }.not_to raise_error
         @obj.visits.yesterday(:siteid=>100).should == 1
       end
       
       it "should give 1 for using on for today stats" do
-        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.add(1,:siteid=>100) }.not_to raise_error
         @obj.visits.on(Time.now,:siteid=>100).should == 1
       end
       
       it "should give 1 for last stats" do
-        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 6.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 5.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 4.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 3.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 2.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 1.day) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 6.day) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 5.day) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 4.day) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 3.day) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 2.day) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>100, :date=>Time.now - 1.day) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>100) }.not_to raise_error
         @obj.visits.last(7,:siteid=>100).should == 7
       end
       
-      it "should have 1 record using range method for today and yesterday at day grain", :grain_tests => true do
-        #Time.zone = "Pacific Time (US & Canada)"
-        lambda { @obj.visits.add(100,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+      it "should have 1 record using range method for today and yesterday at day grain", :grain_tests_day => true do
+        expect { @obj.visits.add(100,:siteid=>100) }.not_to raise_error
         1.upto(365){ | x |            
             @obj.visits.add(1,:siteid=>100, :date=>Time.now + x.days) 
         }
-        #puts @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::DAY, :siteid=>100).inspect
         @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(366).record
       end
       
@@ -141,7 +139,6 @@ describe Mongoid::Gator do
           }
         }
         
-        #puts @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::HOUR, :siteid=>100)
         @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(24).record
       end
       
@@ -154,27 +151,18 @@ describe Mongoid::Gator do
           }
         }
         
-        #puts @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::MONTH, :siteid=>100)
         @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(1).record
       end
       
-      #it "should have 1 record using range method for today and yesterday at hour grain" do
-      #  @obj.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(24).record
-      #end
-      
-      #it "should have 1 record using range method for today and yesterday at month grain" do
-      #  @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(1).record
-      #end
-      
       it "should reset value to zero" do
-        @obj.visits.reset(:date => Time.now, :siteid=>100).should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect {@obj.visits.reset(:date => Time.now, :siteid=>100)}.not_to raise_error
         @obj.visits.today(:siteid=>100).should == 0
       end
       
       it "should have 1 record using range method for today and yesterday at day grain", :group_by => true do
-        lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { @obj.visits.add(1,:siteid=>100) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>200) }.not_to raise_error
+        expect { @obj.visits.add(1,:siteid=>200) }.not_to raise_error
         @obj.visits.group_by(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY).should have(2).record
       end
       
@@ -208,7 +196,7 @@ describe Mongoid::Gator do
       end
 
       it "should increment stats when key is present" do
-        lambda { Test.visits.inc(:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { Test.visits.inc(:siteid=>200) }.not_to raise_error
       end
       
       it "should not decrement stats when key is present" do
@@ -216,7 +204,7 @@ describe Mongoid::Gator do
       end
       
       it "should decrement stats when key is present" do
-        lambda { Test.visits.dec(:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { Test.visits.dec(:siteid=>200) }.not_to raise_error
       end
       
       it "should not add stats when key is present" do
@@ -224,11 +212,11 @@ describe Mongoid::Gator do
       end
       
       it "should add stats when key is present" do
-        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { Test.visits.add(1,:siteid=>200) }.not_to raise_error
       end
 
       it "should give 1 for today stats" do
-        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { Test.visits.add(1,:siteid=>200) }.not_to raise_error
         Test.visits.today(:siteid=>200).should == 1
       end
 
@@ -237,43 +225,31 @@ describe Mongoid::Gator do
       end
 
       it "should give 1 for using ON for today stats" do
-        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { Test.visits.add(1,:siteid=>200) }.not_to raise_error
         Test.visits.on(Time.now,:siteid=>200).should == 1
       end
       
       it "should give 1 for last stats" do
-        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 6.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 5.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 4.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 3.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 2.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200, :date => Time.now - 1.days) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect { Test.visits.add(1,:siteid=>200, :date => Time.now - 6.days) }.not_to raise_error
+        expect { Test.visits.add(1,:siteid=>200, :date => Time.now - 5.days) }.not_to raise_error
+        expect { Test.visits.add(1,:siteid=>200, :date => Time.now - 4.days) }.not_to raise_error
+        expect { Test.visits.add(1,:siteid=>200, :date => Time.now - 3.days) }.not_to raise_error
+        expect { Test.visits.add(1,:siteid=>200, :date => Time.now - 2.days) }.not_to raise_error
+        expect { Test.visits.add(1,:siteid=>200, :date => Time.now - 1.days) }.not_to raise_error
+        expect { Test.visits.add(1,:siteid=>200) }.not_to raise_error
         Test.visits.last(7,:siteid=>200).should ==7
       end
 
-      #it "should have 1 record using range method for today and yesterday at day grain" do
-      #  Test.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>200).should have(2).record
-      #end
-
-     # it "should have 1 record using range method for today and yesterday at hour grain" do
-     #   Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(24).record
-     # end
-
-      #it "should have 1 record using range method for today and yesterday at month grain" do
-     #   Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(24).record
-     # end
-      
       it "should reset value to zero" do
-        Test.visits.reset(:date => Time.now, :siteid=>200).should_not raise_error Mongoid::Errors::ModelNotSaved
+        expect {Test.visits.reset(:date => Time.now, :siteid=>200)}.not_to raise_error
         Test.visits.today(:siteid=>200).should == 0
       end
       
       it "should have 1 record using range method for today and yesterday at day grain", :test => true do
-        lambda { Test.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        lambda { Test.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        Test.visits.group_by(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY).should have(2).record
+        expect { MultiField.visits.add(1,:siteid=>100, :req_type=>"web") }.not_to raise_error
+        expect { MultiField.visits.add(1,:siteid=>200, :req_type=>"mobile") }.not_to raise_error
+        expect { MultiField.visits.add(1,:siteid=>100, :req_type=>"mobile") }.not_to raise_error
+        MultiField.visits.group_by(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY).should have(3).record
       end
       
    end
