@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'mongoid', '>= 2.1.0'
+gem 'mongoid', github: 'mongoid/mongoid'
 
 group :development do
   gem 'rake'

@@ -5,6 +5,7 @@ module Mongoid #:nodoc:
     def self.included(base)
       base.class_eval do
         include  Mongoid::Document 
+        include Mongoid::Attributes::Dynamic
         extend ClassMethods
         class_attribute :gator_keys, :gator_fields
         self.gator_keys = []

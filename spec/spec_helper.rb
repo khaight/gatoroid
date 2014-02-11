@@ -12,12 +12,13 @@ require 'rspec'
 require 'rspec/autorun'
 
 Time.zone = "UTC"
+#Mongoid.logger = Logger.new($stdout)
+#Moped.logger = Logger.new($stdout)
 Mongoid.configure do |config|
-  name = "gatoroid_test"
-  host = "localhost"
-  port = "27017"
-  config.master = Mongo::Connection.new.db(name)
+  config.connect_to("gatoroid_test")
 end
+
+puts "Mongoid::VERSION:#{Mongoid::VERSION}\nMoped::VERSION:#{Moped::VERSION}"
 
 RSpec.configure do |config|
   config.mock_with :mocha
@@ -34,8 +35,8 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
   
-  config.after(:each) do
-    DatabaseCleaner.clean
-  end
+  #config.after(:each) do
+  #  DatabaseCleaner.clean
+  #end
   
 end

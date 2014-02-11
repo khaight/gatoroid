@@ -6,6 +6,13 @@ class Test
   gator_field :visits
 end
 
+class MultiField 
+  include Mongoid::Gator
+  field :siteid
+  field :req_type
+  gator_field :visits
+end
+
 
 describe Mongoid::Gator do
   before(:all) do
@@ -33,6 +40,7 @@ describe Mongoid::Gator do
   describe "when using an instance of the object" do
       before(:all) do
         @obj = Test.new
+        @multi_obj = MultiField.new
       end
       
       it "should deny access to undefined methods" do
@@ -45,7 +53,7 @@ describe Mongoid::Gator do
       end
       
       it "should NOT create an index for the gator_fields" do
-        @obj.class.index_options.should_not include(:visits)
+        @obj.class.index_specifications.should_not include(:visits)
       end
       
       it "should create a method for accesing the stats of the proper class" do
@@ -88,7 +96,7 @@ describe Mongoid::Gator do
       end
 
 
-      it "should give 1 for today stats" do
+      it "should give 1 for today stats", :today_test => true do
         lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         @obj.visits.today(:siteid=>100).should == 1
       end
@@ -114,36 +122,62 @@ describe Mongoid::Gator do
         @obj.visits.last(7,:siteid=>100).should == 7
       end
       
-      it "should have 1 record using range method for today and yesterday at day grain", :kevtest => true do
+      it "should have 1 record using range method for today and yesterday at day grain", :grain_tests => true do
+        #Time.zone = "Pacific Time (US & Canada)"
         lambda { @obj.visits.add(100,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-        1.upto(365){ | x |  
-          1.upto(2){ |y| 
-            lambda { @obj.visits.add(1,:siteid=>100, :date=>Time.now + x.days + y.hours) }.should_not raise_error Mongoid::Errors::ModelNotSaved
-          }
+        1.upto(365){ | x |            
+            @obj.visits.add(1,:siteid=>100, :date=>Time.now + x.days) 
         }
-        Time.zone = "Pacific Time (US & Canada)"
+        #puts @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::DAY, :siteid=>100).inspect
         @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(366).record
       end
       
-      it "should have 1 record using range method for today and yesterday at hour grain" do
-        @obj.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(24).record
+      it "should have 1 record using range method for today and yesterday at hour grain", :grain_tests => true do
+        Time.zone = "Pacific Time (US & Canada)"
+        1.upto(1){ | x |  
+          0.upto(23){ |y| 
+            @obj.visits.add(1,:siteid=>100, :date=>Time.zone.now + x.days + y.hours )
+            
+          }
+        }
+        
+        #puts @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::HOUR, :siteid=>100)
+        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(24).record
       end
       
-      it "should have 1 record using range method for today and yesterday at month grain" do
-        @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(1).record
+      it "should have 1 record using range method for today and yesterday at MONTH grain", :grain_tests => true do
+        Time.zone = "Pacific Time (US & Canada)"
+        1.upto(1){ | x |  
+          0.upto(23){ |y| 
+            @obj.visits.add(1,:siteid=>100, :date=>Time.zone.now + x.days + y.hours )
+            
+          }
+        }
+        
+        #puts @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::MONTH, :siteid=>100)
+        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(1).record
       end
+      
+      #it "should have 1 record using range method for today and yesterday at hour grain" do
+      #  @obj.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(24).record
+      #end
+      
+      #it "should have 1 record using range method for today and yesterday at month grain" do
+      #  @obj.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(1).record
+      #end
       
       it "should reset value to zero" do
         @obj.visits.reset(:date => Time.now, :siteid=>100).should_not raise_error Mongoid::Errors::ModelNotSaved
         @obj.visits.today(:siteid=>100).should == 0
       end
       
-      it "should have 1 record using range method for today and yesterday at day grain", :test => true do
+      it "should have 1 record using range method for today and yesterday at day grain", :group_by => true do
         lambda { @obj.visits.add(1,:siteid=>100) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         lambda { @obj.visits.add(1,:siteid=>200) }.should_not raise_error Mongoid::Errors::ModelNotSaved
         @obj.visits.group_by(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY).should have(2).record
       end
+      
   end
   
   
@@ -158,7 +192,7 @@ describe Mongoid::Gator do
        end
 
        it "should NOT create an index for the gator_fields" do
-         Test.index_options.should_not include(:visits)
+         Test.index_specifications.should_not include(:visits)
        end
 
        it "should create a method for accesing the stats of the proper class" do
@@ -218,17 +252,17 @@ describe Mongoid::Gator do
         Test.visits.last(7,:siteid=>200).should ==7
       end
 
-      it "should have 1 record using range method for today and yesterday at day grain" do
-        Test.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>200).should have(2).record
-      end
+      #it "should have 1 record using range method for today and yesterday at day grain" do
+      #  Test.visits.range(Time.now..Time.now + 1.day,Mongoid::Gator::Readers::DAY, :siteid=>200).should have(2).record
+      #end
 
-      it "should have 1 record using range method for today and yesterday at hour grain" do
-        Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(24).record
-      end
+     # it "should have 1 record using range method for today and yesterday at hour grain" do
+     #   Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(24).record
+     # end
 
-      it "should have 1 record using range method for today and yesterday at month grain" do
-        Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(24).record
-      end
+      #it "should have 1 record using range method for today and yesterday at month grain" do
+     #   Test.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>200).should have(24).record
+     # end
       
       it "should reset value to zero" do
         Test.visits.reset(:date => Time.now, :siteid=>200).should_not raise_error Mongoid::Errors::ModelNotSaved
