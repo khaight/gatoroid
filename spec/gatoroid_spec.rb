@@ -125,7 +125,8 @@ describe Mongoid::Gator do
         @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::DAY, :siteid=>100).should have(366).record
       end
       
-      it "should have 1 record using range method for today and yesterday at hour grain" do
+      it "should have 1 record using range method for today and yesterday at hour grain", :nantest => true do
+        @obj.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).inspect
         @obj.visits.range(Time.now.change(:hour=>0).change(:sec=>0)..Time.now.change(:hour=>0).change(:sec=>0) + 1.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(24).record
       end
       
