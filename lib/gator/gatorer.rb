@@ -27,9 +27,10 @@ module Mongoid  #:nodoc:
         # Get collections for
         def collection_for(date,grain,opts={})
           unless date.nil?
+            
             return  @object.collection.group(:keyf => create_fkey(grain,0), 
-                    :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
-                    :cond=>create_query_hash(date,grain,opts),
+                    :reduce => "function(obj,prev){prev.#{@for} += obj.#{@for}}",
+                    :cond=>create_query_hash_field(date,grain,@for,opts),
                     :initial => {@for => 0})
           end
         end
@@ -38,8 +39,8 @@ module Mongoid  #:nodoc:
         def collection_for_group(date,grain,off_set,opts={})
           unless date.nil?
             return  @object.collection.group(:key => create_group_key_hash, 
-                    :reduce => "function(obj,prev){for (var key in obj.#{@for}) {prev.#{@for} += obj.#{@for}}}",
-                    :cond=>create_query_hash(date,grain,opts),
+                    :reduce => "function(obj,prev){prev.#{@for} += obj.#{@for}}",
+                    :cond=>create_query_hash_field(date,grain,@for,opts),
                     :initial => {@for => 0})
           end
         end
@@ -185,6 +186,27 @@ module Mongoid  #:nodoc:
           
           sdate,edate = convert_date_by_level(date,grain) # Set Dates
           key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate)}
+          return key_hash
+        end
+        
+        # Create Query Hash
+        def create_query_hash_field(date = Time.now, grain, key_field, opts)
+          key_hash = Hash.new { |hash, key| hash[key] = [] }
+          # Set Keys
+          if !opts.empty?
+            @object.gator_keys.each do | gk |
+              raise Errors::ModelNotSaved, "Missing key value #{gk}" if opts[gk].nil?
+              if  opts[gk].kind_of?(Array)
+                key_hash[gk] = {"$in" =>  opts[gk]}
+              else
+                key_hash[gk] = opts[gk]
+              end
+            end
+          end
+          
+          sdate,edate = convert_date_by_level(date,grain) # Set Dates
+          key_hash[:date] = {"$gte" => normalize_date(sdate), "$lt" => normalize_date(edate)}
+          key_hash[key_field] = {"$ne" => nil}
           return key_hash
         end
         
