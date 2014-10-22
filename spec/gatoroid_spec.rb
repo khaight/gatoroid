@@ -139,7 +139,7 @@ describe Mongoid::Gator do
           }
         }
         
-        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(24).record
+        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::HOUR, :siteid=>100).should have(8761).record
       end
       
       it "should have 1 record using range method for today and yesterday at MONTH grain", :grain_tests => true do
@@ -151,7 +151,7 @@ describe Mongoid::Gator do
           }
         }
         
-        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(1).record
+        @obj.visits.range(Time.zone.now..Time.zone.now + 365.day,Mongoid::Gator::Readers::MONTH, :siteid=>100).should have(13).record
       end
       
       it "should reset value to zero" do
