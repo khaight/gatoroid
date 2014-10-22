@@ -41,7 +41,7 @@ module Mongoid  #:nodoc:
               case grain
                 when HOUR
                   start_date = start_date.change(:sec=>0).change(:min => 0)
-                  end_date = end_date.change(:sec=>0).change(:min => 0) - 1.hour
+                  end_date = end_date.change(:sec=>0).change(:min => 0)
                 when DAY
                   start_date = start_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
@@ -57,11 +57,27 @@ module Mongoid  #:nodoc:
               data.each do | di |
                 case grain
                   when HOUR
-                    result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} #{di["hour"] -1}:00:00").to_i, @for => di[@for.to_s].to_i}
+                    result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} #{di["hour"]}:00:00").to_i, @for => di[@for.to_s].to_i}
                   when DAY
                     result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} 0:00:00").to_i, @for => di[@for.to_s].to_i}
                   when MONTH
                     result_set << {"date" => Time.zone.parse("1-#{di["month"]}-#{di["year"]} 0:00:00").to_i, @for => di[@for.to_s].to_i}
+                end
+              end
+              
+              # Build Result Set by Time Zone
+              while start_date <= end_date
+               if result_set.select{|item| item["date"] == start_date.to_i }[0].nil?
+                 result_set << {"date" => start_date.to_i, @for => 0}
+               end
+              
+               case grain
+                 when HOUR
+                   start_date = start_date + 1.hour
+                 when DAY
+                   start_date = start_date + 1.day
+                 when MONTH
+                   start_date = start_date + 1.month
                 end
               end
               
