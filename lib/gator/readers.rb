@@ -57,7 +57,7 @@ module Mongoid  #:nodoc:
               data.each do | di |
                 case grain
                   when HOUR
-                    result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} #{di["hour"]}:00:00").to_i, @for => di[@for.to_s].to_i}
+                    result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} #{di["hour"]}:00:00 UTC").to_i, @for => di[@for.to_s].to_i}
                   when DAY
                     result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} 0:00:00").to_i, @for => di[@for.to_s].to_i}
                   when MONTH
