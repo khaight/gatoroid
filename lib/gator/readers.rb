@@ -30,7 +30,7 @@ module Mongoid  #:nodoc:
         # Range - retuns a collection for a specified range on specified level
         def range(date, grain=DEFAULT_GRAIN, opts={})
             data = collection_for(date,grain,opts)
-
+            
             # Add Zero values for dates missing
             # May want to look into a way to get mongo to do this
             if date.is_a?(Range)
@@ -42,34 +42,27 @@ module Mongoid  #:nodoc:
                 when HOUR
                   start_date = start_date.change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:sec=>0).change(:min => 0)
+                  data = data.group_by {|d| Time.zone.parse("#{d["day"]}-#{d["month"]}-#{d["year"]} #{d["hour"]}:00:00 UTC").to_i }
                 when DAY
                   start_date = start_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:hour=>0).change(:sec=>0).change(:min => 0)
+                  data = data.group_by {|d| Time.zone.parse("#{d["day"]}-#{d["month"]}-#{d["year"]} #{d["hour"]}:00:00 UTC").change(hour: 0).to_i }
                 when MONTH
                   start_date = start_date.change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)
                   end_date = end_date.change(:day=>1).change(:hour=>0).change(:sec=>0).change(:min => 0)
+                  data = data.group_by {|d| Time.zone.parse("#{d["day"]}-#{d["month"]}-#{d["year"]} #{d["hour"]}:00:00 UTC").change(day: 1).change(hour: 0).to_i }
               end
-
+              
               # Initialize result set array
               result_set = []
-              
-              # Build Result Set by Time Zone
-              data.each do | di |
-                case grain
-                  when HOUR
-                    result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} #{di["hour"]}:00:00 UTC").to_i, @for => di[@for.to_s].to_i}
-                  when DAY
-                    result_set << {"date" => Time.zone.parse("#{di["day"]}-#{di["month"]}-#{di["year"]} 0:00:00").to_i, @for => di[@for.to_s].to_i}
-                  when MONTH
-                    result_set << {"date" => Time.zone.parse("1-#{di["month"]}-#{di["year"]} 0:00:00").to_i, @for => di[@for.to_s].to_i}
-                end
-              end
-              
+
               # Build Result Set by Time Zone
               while start_date <= end_date
-               if result_set.select{|item| item["date"] == start_date.to_i }[0].nil?
-                 result_set << {"date" => start_date.to_i, @for => 0}
-               end
+                if data[start_date.to_i].nil?
+                   result_set << {"date" => "#{start_date.to_i}", @for => 0}
+                else
+                  result_set << {"date" => "#{start_date.to_i}", @for => data[start_date.to_i].map{|di| di[@for.to_s].to_i}.inject(0, :+)}
+                end
               
                case grain
                  when HOUR

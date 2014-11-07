@@ -55,16 +55,16 @@ module Mongoid  #:nodoc:
                 ]
               when DAY
                 pipeline = [
-                    {"$match" => create_query_hash(date,grain,opts)},
-                    {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}, "day" => {"$dayOfMonth" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
-                    {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "day" => "$_id.day", "#{@for}" => 1}},
-                ]
+                      {"$match" => create_query_hash(date,grain,opts)},
+                      {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}, "day" => {"$dayOfMonth" => "$date"}, "hour" => {"$hour" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
+                      {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "day" => "$_id.day", "hour" => "$_id.hour", "#{@for}" => 1}},
+                  ]
               when MONTH
                 pipeline = [
-                    {"$match" => create_query_hash(date,grain,opts)},
-                    {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
-                    {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "#{@for}" => 1}},
-                ]
+                      {"$match" => create_query_hash(date,grain,opts)},
+                      {"$group" => {"_id" => {"year" => {"$year" => "$date"}, "month" => {"$month" => "$date"}, "day" => {"$dayOfMonth" => "$date"}, "hour" => {"$hour" => "$date"}}, "#{@for}" => {"$sum" => "$#{@for}"}}},
+                      {"$project" => {"_id" => 0,  "year"=> "$_id.year", "month" => "$_id.month", "day" => "$_id.day", "hour" => "$_id.hour", "#{@for}" => 1}},
+                  ]
             end
           return pipeline         
         end
