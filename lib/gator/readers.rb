@@ -59,9 +59,9 @@ module Mongoid  #:nodoc:
               # Build Result Set by Time Zone
               while start_date <= end_date
                 if data[start_date.to_i].nil?
-                   result_set << {"date" => "#{start_date.to_i}", @for => 0}
+                   result_set << {"date" => start_date.to_i, @for => 0}
                 else
-                  result_set << {"date" => "#{start_date.to_i}", @for => data[start_date.to_i].map{|di| di[@for.to_s].to_i}.inject(0, :+)}
+                  result_set << {"date" => start_date.to_i, @for => data[start_date.to_i].map{|di| di[@for.to_s].to_i}.inject(0, :+)}
                 end
               
                case grain
