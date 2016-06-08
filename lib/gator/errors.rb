@@ -1,11 +1,11 @@
 # encoding: utf-8
 module Mongoid #:nodoc
   module Errors #:nodoc
-
     class ClassAlreadyDefined < RuntimeError
       def initialize(klass)
         @klass = klass
       end
+
       def message
         "#{@klass} already defined, can't aggregate!"
       end
@@ -16,6 +16,7 @@ module Mongoid #:nodoc
         @klass = klass
         @token = token
       end
+
       def message
         "Aggregation '#{@token}' already defined for model #{@klass}"
       end
@@ -25,6 +26,7 @@ module Mongoid #:nodoc
       def initialize(token)
         @token = token
       end
+
       def message
         "Ussing aggregation name '#{@klass}' is deprecated. Please select another name."
       end
@@ -33,6 +35,5 @@ module Mongoid #:nodoc
     class ModelNotSaved < RuntimeError; end
 
     class NotMongoid < RuntimeError; end
-    
   end
 end
