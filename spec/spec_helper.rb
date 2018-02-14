@@ -7,6 +7,7 @@ require 'mongoid'
 require 'gatoroid'
 require 'bson'
 require 'rspec'
+require 'database_cleaner'
 
 Time.zone = 'UTC'
 Mongoid.configure do |config|
@@ -19,18 +20,15 @@ RSpec.configure do |config|
   config.mock_with :mocha
 
   # keep our mongo DB all shiney and new between tests
-  require 'database_cleaner'
 
   config.before(:suite) do
     DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.orm = 'mongoid'
+    DatabaseCleaner.clean_with(:truncation)
   end
 
-  config.before(:each) do
-    DatabaseCleaner.clean
-  end
-
-  config.after(:each) do
-    DatabaseCleaner.clean
+  config.around(:each) do |example|
+    DatabaseCleaner.cleaning do
+      example.run
+    end
   end
 end

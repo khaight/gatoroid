@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'mongoid', '~> 5.1.0'
 
   gem.add_development_dependency 'rubocop', '0.36.0'
-  gem.add_development_dependency 'database_cleaner', '1.5.1'
-  gem.add_development_dependency 'rspec', '~> 3.1', '>= 3.1.0'
+  gem.add_development_dependency 'database_cleaner', '1.6.1'
+  gem.add_development_dependency 'rspec', '~> 3.1', '>= 3.6'
   gem.add_development_dependency 'mocha', '1.1.0'
 end
