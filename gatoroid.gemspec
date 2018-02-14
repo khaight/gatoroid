@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.files         = `git ls-files -z`.split("\x0")
   gem.executables   = gem.files.grep(%r{^bin/}) { |f| File.basename(f) }
 
-  gem.add_dependency 'mongoid', '~> 5.1.0'
+  gem.add_dependency 'mongoid', '~> 6.2'
 
   gem.add_development_dependency 'rubocop', '0.36.0'
   gem.add_development_dependency 'database_cleaner', '1.6.1'

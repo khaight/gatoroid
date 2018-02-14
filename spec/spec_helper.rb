@@ -10,9 +10,7 @@ require 'rspec'
 require 'database_cleaner'
 
 Time.zone = 'UTC'
-Mongoid.configure do |config|
-  config.connect_to('gatoroid_test')
-end
+Mongoid.load!('spec/mongoid.yml', :test)
 
 puts "Mongoid::VERSION:#{Mongoid::VERSION}"
 
